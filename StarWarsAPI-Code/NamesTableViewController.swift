@@ -18,14 +18,3 @@ class NamesTableViewController: ArrayTableViewController<UITableViewCell> {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
