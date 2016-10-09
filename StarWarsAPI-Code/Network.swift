@@ -1,11 +1,15 @@
 import Foundation
 
 class Network {
+
+    static let baseURL = URL(string:"http://swapi.co")!
+    static let peopleEndpoint = baseURL.appendingPathComponent("api/people", isDirectory: false)
+
     static func getNames(_ completion: @escaping ([String])-> Void) {
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config)
-        let peopleEndpoint = "http://swapi.co/api/people"
-        session.dataTask( with: URL(string: peopleEndpoint)!, completionHandler: { (data, response, error) in
+
+        let task = session.dataTask(with: peopleEndpoint) { data, response, error in
 
             guard error == nil else {
                 print("Some Error \(error!)")
@@ -18,7 +22,8 @@ class Network {
             }
 
             completion(newNames)
-        } ) .resume()
+        }
+        task.resume()
 
     }
 
