@@ -5,16 +5,16 @@ protocol CellConfigurable {
     func configure(with: ConfigurationType)
 }
 
-class ArrayTableViewController<U: UITableViewCell> :
-    UITableViewController where U: CellConfigurable  {
+class ArrayTableViewController<Cell: UITableViewCell> :
+    UITableViewController where Cell: CellConfigurable  {
 
-    let dataCell = "dataCell"
+    let dataCell = "dataCellReuseIdentifier"
 
-    var data: Array<U.ConfigurationType> = []
+    var data: Array<Cell.ConfigurationType> = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.register(U.self, forCellReuseIdentifier: dataCell)
+        tableView.register(Cell.self, forCellReuseIdentifier: dataCell)
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -23,8 +23,7 @@ class ArrayTableViewController<U: UITableViewCell> :
 
     override func tableView(_ tableView: UITableView,
                             cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let tvc = tableView.dequeueReusableCell(withIdentifier: dataCell, for: indexPath)
-        let cell = tvc as! U
+        let cell = tableView.dequeueReusableCell(withIdentifier: dataCell, for: indexPath) as! Cell
         let content = data[(indexPath).row]
         cell.configure(with: content)
         return cell
