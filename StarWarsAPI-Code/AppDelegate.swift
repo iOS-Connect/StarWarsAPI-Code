@@ -1,11 +1,3 @@
-//
-//  AppDelegate.swift
-//  StarWarsAPI-Code
-//
-//  Created by John Regner on 10/9/16.
-//  Copyright © 2016 iOS-Connect. All rights reserved.
-//
-
 import UIKit
 
 @UIApplicationMain
@@ -15,32 +7,83 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        window = UIWindow(frame: UIScreen.main.bounds)
+
+        let vc = NamesTableViewController(nibName: nil, bundle: nil)
+        window?.rootViewController = UINavigationController(rootViewController: vc)
+
+        window?.backgroundColor = .white
+        window?.makeKeyAndVisible()
+
         return true
     }
+}
 
-    func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+class NamesTableViewController: UITableViewController {
+
+    var names = ["Douglas", "Jay", "Gloria", "John"]
+    let nameCell = "NameCell"
+
+    override func viewDidLoad() {
+        title = "Star Wars Names"
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: nameCell)
+        Network.getNames { [weak self] (names) in
+            self?.names = names
+            self?.tableView.reloadData()
+        }
     }
 
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return names.count
     }
 
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: nameCell, for: indexPath)
+        cell.textLabel?.text = names[(indexPath as NSIndexPath).row]
+        return cell
     }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    }
-
-    func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-    }
-
 
 }
 
+class Network {
+    static func getNames(_ completion: @escaping ([String])-> Void) {
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        let peopleEndpoint = "http://swapi.co/api/people"
+        session.dataTask( with: URL(string: peopleEndpoint)!, completionHandler: { (data, response, error) in
+
+            guard error == nil else {
+                print("Some Error \(error!)")
+                return
+            }
+
+            guard let newNames = Network().parseData(data) else {
+                print("Sorry no names")
+                return
+            }
+
+            completion(newNames)
+        } ) .resume()
+
+    }
+
+    func parseData(_ data: Data?) -> [String]? {
+        guard let data = data else { return nil }
+
+        let json = try? JSONSerialization.jsonObject(with: data, options: [.allowFragments])
+        let results = (json as? NSDictionary)?["results"]
+        guard let peopleArray = results as? NSArray else {
+            return nil
+        }
+
+        var names = [String]()
+        for person in peopleArray {
+            let dict = person as? NSDictionary
+            if let name = dict?["name"] as? String {
+                names.append(name)
+            }
+        }
+        return names
+    }
+    
+}
