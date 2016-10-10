@@ -7,7 +7,11 @@ extension UITableViewCell: CellConfigurable {
 }
 
 class NamesTableViewController: ArrayTableViewController<UITableViewCell> {
-    var tableSegments = ["Names", "Spaceships"]
+    lazy var segmentControl: UISegmentedControl = {
+        let segControl = UISegmentedControl(items: ["Names", "Spaceships"])
+        segControl.selectedSegmentIndex = 0
+        return segControl
+    }()
     override func viewDidLoad() {       
         super.viewDidLoad()
         title = "Star Wars Names"
@@ -15,10 +19,9 @@ class NamesTableViewController: ArrayTableViewController<UITableViewCell> {
         self?.data = names
         self?.tableView.reloadData()
         }
-        let segmentControl = UISegmentedControl(items: tableSegments)
         segmentControl.addTarget(self, action: #selector(NamesTableViewController.segmentDidChange(sender:)), for: .valueChanged)
         navigationItem.titleView = segmentControl
-    }    
+    }
     func segmentDidChange(sender:UISegmentedControl) {
         print("segment \(sender.selectedSegmentIndex) selected")
     }
