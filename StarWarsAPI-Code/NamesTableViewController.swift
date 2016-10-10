@@ -10,6 +10,7 @@ class NamesTableViewController: ArrayTableViewController<UITableViewCell> {
     lazy var segmentControl: UISegmentedControl = {
         let segControl = UISegmentedControl(items: ["Names", "Spaceships"])
         segControl.selectedSegmentIndex = 0
+        segControl.addTarget(self, action: #selector(NamesTableViewController.segmentDidChange(sender:)), for: .valueChanged)
         return segControl
     }()
     override func viewDidLoad() {       
@@ -19,7 +20,6 @@ class NamesTableViewController: ArrayTableViewController<UITableViewCell> {
         self?.data = names
         self?.tableView.reloadData()
         }
-        segmentControl.addTarget(self, action: #selector(NamesTableViewController.segmentDidChange(sender:)), for: .valueChanged)
         navigationItem.titleView = segmentControl
     }
     func segmentDidChange(sender:UISegmentedControl) {
